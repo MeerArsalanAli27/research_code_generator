@@ -337,6 +337,7 @@ import Layout from '@/components/layout/Layout';
 // the backend. OpenRouter lets users generate a free API key and use the app
 // at no cost, so it's the friendliest default for new users.
 const DEFAULT_LLM = 'openrouter';
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8001').replace(/\/$/, '');
 
 const Generator = () => {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -388,10 +389,10 @@ const Generator = () => {
       let endpoint = '';
       if (file) {
         formData.append('file', file); // For PDF file upload
-        endpoint = 'http://localhost:8000/process_pdf';
+        endpoint = `${API_URL}/process_pdf`;
       } else {
         formData.append('url', url); // For URL-based processing
-        endpoint = 'http://localhost:8000/process_url';
+        endpoint = `${API_URL}/process_url`;
       }
 
       // Add framework, LLM, and API key
