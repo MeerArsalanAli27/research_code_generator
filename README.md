@@ -1,261 +1,165 @@
-# Research Paper Code Generator
+# AI Research Paper to Code Generator
 
-<div align="center">
+AI Research Paper to Code Generator extracts useful information from a research paper and creates a runnable machine-learning pipeline. Papers can be supplied as a URL or as a PDF upload.
 
-![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-green)
-![Status](https://img.shields.io/badge/status-active-brightgreen)
+The application has a React/Vite frontend and a FastAPI backend. The backend extracts paper text, formulas, and image text, then uses a sequential Agno pipeline to analyze the paper and generate code. If the AI agent pipeline is unavailable or fails, the built-in fallback generator is used.
 
-</div>
+## Features
 
-A powerful AI-driven application that transforms research papers into working machine learning code. This tool automatically extracts text, formulas, and images from research papers and generates executable code in your preferred ML framework.
+- Process a paper from a URL or PDF file
+- Extract paper text and mathematical formulas
+- Extract text from images with optional EasyOCR support
+- Generate PyTorch or TensorFlow code
+- Use OpenRouter, OpenAI, Anthropic, Gemini, or Grok models
+- Fall back to deterministic code generation when agent dependencies or model calls fail
+- Health and API information endpoints
 
-<div align="center">
+## Project Structure
 
-![Research Paper Code Generator](https://via.placeholder.com/800x400?text=Research+Paper+Code+Generator)
+```text
+AI_researchpaper_to_code/
+|-- backend/
+|   |-- main.py
+|   |-- requirements.txt
+|   `-- utils/
+|       |-- extract_text_from_image.py
+|       |-- fall_back_code.py
+|       `-- find_formulas.py
+`-- research-code-genie/
+    |-- package.json
+    `-- src/
+        |-- components/
+        |-- pages/
+        `-- App.tsx
+```
 
-</div>
+## Requirements
 
-## 🌟 Features
+- Python 3.8 or newer
+- Node.js 16 or newer
+- npm
+- Poppler for PDF-to-image conversion used by `pdf2image`
 
-- **Dual Input Methods**: Process papers via URL or PDF upload
-- **Comprehensive Extraction**: Automatically extracts text, mathematical formulas, and images
-- **OCR Capabilities**: Extracts text from images within papers
-- **Formula Recognition**: Identifies and extracts LaTeX and MathML formulas
-- **Multi-Framework Support**: Generates code in PyTorch or TensorFlow
-- **Multiple LLM Options**: Works with OpenAI GPT, Anthropic Claude, or Grok AI
-- **Intelligent Code Generation**: Uses CrewAI with specialized agents for accurate code generation
-- **Fallback Mechanism**: Ensures code generation even if primary method fails
+On Windows, install Poppler and add its `bin` directory to `PATH`. The backend can still extract PDF text when image conversion is unavailable, but image OCR will be skipped.
 
-## 🔍 Tech Stack
+## Installation
 
-```mermaid
-graph TD
-    subgraph Frontend["Frontend (React + TypeScript)"]
-        UI["UI Components (shadcn/ui)"] --> React["React"]
-        Styling["Styling (Tailwind CSS)"] --> React
-        State["State Management (React Hooks)"] --> React
-        HTTP["HTTP Client (Axios)"] --> React
-    end
-    
-    subgraph Backend["Backend (Python + FastAPI)"]
-        API["API (FastAPI)"] --> Python["Python"]
-        PDF["PDF Processing (PyPDF2, pdf2image)"] --> Python
-        OCR["OCR (EasyOCR)"] --> Python
-        Crawling["Web Crawling (crawl4ai)"] --> Python
-        AI["AI Orchestration (CrewAI)"] --> Python
-    end
-    
-    Frontend --"API Requests"--> Backend
-    Backend --"JSON Responses"--> Frontend
+### Backend
+
+```powershell
+cd backend
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
 ### Frontend
-- **Framework**: React with TypeScript
-- **UI Components**: shadcn/ui (Radix UI)
-- **Styling**: Tailwind CSS
-- **HTTP Client**: Axios
-- **Routing**: React Router
-- **3D Effects**: Three.js with React Three Fiber
 
-### Backend
-- **Framework**: FastAPI
-- **PDF Processing**: PyPDF2, pdf2image
-- **OCR**: EasyOCR
-- **Web Crawling**: crawl4ai
-- **AI Orchestration**: CrewAI
-- **Image Processing**: Pillow, NumPy
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- Node.js (v16+)
-- Python (v3.8+)
-- pip
-
-### Frontend Setup
-
-```bash
-# Navigate to the frontend directory
+```powershell
 cd research-code-genie
-
-# Install dependencies
 npm install
-
-# Start the development server
-npm run dev
 ```
 
-The frontend will be available at http://localhost:5173
+## Running the Application
 
-### Backend Setup
+Start the backend from the `backend` directory:
 
-```bash
-# Navigate to the backend directory
-cd backend
-
-# Create a virtual environment (optional but recommended)
-python -m venv venv
-
-# Activate the virtual environment
-# On Windows
-venv\Scripts\activate
-# On macOS/Linux
-source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Start the server
+```powershell
 uvicorn main:app --host 0.0.0.0 --port 8001 --reload
 ```
 
-The backend API will be available at http://localhost:8001
+Start the frontend in a second terminal:
 
-## 📚 API Documentation
+```powershell
+cd research-code-genie
+npm run dev
+```
 
-### `/process_url` Endpoint
+Open the URL printed by Vite, normally `http://localhost:5173`.
 
-**Method**: POST
+The backend API is available at `http://localhost:8001`. Interactive API documentation is available at `http://localhost:8001/docs`.
 
-**Description**: Processes a research paper from a URL
+## API
 
-**Request Body**:
+### `GET /health`
+
+Returns the backend health status:
+
 ```json
-{
-  "url": "https://arxiv.org/abs/2302.13971",
-  "framework": "pytorch",
-  "llm": "openai",
-  "api_key": "your_api_key_here"
-}
+{"status": "healthy"}
 ```
 
-**Response**:
-```json
-{
-  "text": "Extracted text from the paper...",
-  "formulas": ["formula1", "formula2"],
-  "image_analysis": [{
-    "image": "base64_encoded_image",
-    "extracted_text": "Text extracted from image"
-  }],
-  "code": "Generated Python code..."
-}
+### `GET /`
+
+Returns API metadata, supported LLM providers, the default provider, and supported frameworks.
+
+### `POST /process_url`
+
+Send a `multipart/form-data` request with:
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `url` | Yes | URL of the research paper or article |
+| `framework` | No | `PyTorch` or `TensorFlow`; defaults to `PyTorch` |
+| `llm` | No | `openrouter`, `openai`, `anthropic`, `gemini`, or `grok` |
+| `api_key` | Usually | Provider API key; can be omitted when using server-side OpenRouter configuration |
+
+Example:
+
+```powershell
+curl.exe -X POST http://localhost:8001/process_url `
+  -F "url=https://arxiv.org/abs/2302.13971" `
+  -F "framework=PyTorch" `
+  -F "llm=openrouter" `
+  -F "api_key=YOUR_API_KEY"
 ```
 
-### `/process_pdf` Endpoint
+### `POST /process_pdf`
 
-**Method**: POST
+Send a `multipart/form-data` request with the same fields as `/process_url`, replacing `url` with a required `file` field containing a PDF.
 
-**Description**: Processes an uploaded PDF research paper
+Example:
 
-**Request Body**: `multipart/form-data`
-- `file`: PDF file
-- `framework`: ML framework (pytorch/tensorflow)
-- `llm`: LLM provider (openai/anthropic/grok)
-- `api_key`: API key for the selected LLM
-
-**Response**: Same as `/process_url` endpoint
-
-### Example Usage (Python)
-
-```python
-import requests
-
-# Process a paper from URL
-url_response = requests.post(
-    "http://localhost:8001/process_url",
-    json={
-        "url": "https://arxiv.org/abs/2302.13971",
-        "framework": "pytorch",
-        "llm": "openai",
-        "api_key": "your_api_key_here"
-    }
-)
-
-# Process a PDF paper
-with open('paper.pdf', 'rb') as f:
-    pdf_response = requests.post(
-        "http://localhost:8001/process_pdf",
-        files={"file": f},
-        data={
-            "framework": "pytorch",
-            "llm": "openai",
-            "api_key": "your_api_key_here"
-        }
-    )
+```powershell
+curl.exe -X POST http://localhost:8001/process_pdf `
+  -F "file=@paper.pdf" `
+  -F "framework=PyTorch" `
+  -F "llm=openrouter" `
+  -F "api_key=YOUR_API_KEY"
 ```
 
-## 🧠 How It Works
+Successful processing returns JSON containing:
 
-1. **Input Processing**:
-   - URL input: The system crawls the webpage and extracts HTML content
-   - PDF input: The system extracts text and images from the PDF
+- `text`: extracted paper text
+- `formulas`: detected formulas
+- `images_with_text`: processed images and OCR results
+- `image_analysis`: image analysis data, when available
+- `code`: generated machine-learning code
 
-2. **Content Extraction**:
-   - Text is extracted from the document
-   - Mathematical formulas (LaTeX/MathML) are identified and extracted
-   - Images are processed with OCR to extract any text they contain
+## API Keys
 
-3. **AI Processing**:
-   - The system uses CrewAI to orchestrate specialized agents:
-     - **Paper Scraper**: Extracts and organizes content from the paper
-     - **Content Analyzer**: Analyzes the extracted content to understand the paper's algorithms
-     - **Code Generator**: Generates executable code based on the analysis
+For server-side configuration, create a `.env` file in `backend` or set an environment variable before starting the server:
 
-4. **Fallback Mechanism**:
-   - If CrewAI processing fails, a fallback code generator creates basic implementation
-   - The fallback adapts based on detected formulas and content type
-
-## 🛠️ Development
-
-### Project Structure
-
-```
-├── backend/                  # Backend code
-│   ├── main.py               # FastAPI application
-│   ├── requirements.txt      # Python dependencies
-│   └── utils/                # Utility functions
-│       ├── extract_text_from_image.py  # OCR functionality
-│       ├── fall_back_code.py           # Fallback code generation
-│       └── find_formulas.py            # Formula extraction
-│
-└── research-code-genie/      # Frontend code
-    ├── public/               # Static assets
-    ├── src/                  # Source code
-    │   ├── components/       # UI components
-    │   ├── hooks/            # Custom React hooks
-    │   ├── pages/            # Application pages
-    │   └── App.tsx           # Main application component
-    ├── package.json          # Node.js dependencies
-    └── vite.config.ts        # Vite configuration
+```powershell
+$env:OPENROUTER_API_KEY = "your-key"
 ```
 
-### Adding New Features
+Never commit API keys or place them in source control. Request-provided keys are used only for the current processing request.
 
-1. **New ML Frameworks**:
-   - Add new framework option in the frontend select component
-   - Implement corresponding code generation in the backend
+## Frontend Commands
 
-2. **Supporting New LLMs**:
-   - Add new LLM option in the frontend
-   - Implement the LLM integration in the backend
+Run these commands from `research-code-genie`:
 
-## 📄 License
+```powershell
+npm run dev       # Start the Vite development server
+npm run build     # Create a production build
+npm run preview   # Preview the production build locally
+```
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## Notes
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📞 Contact
-
-If you have any questions or feedback, please open an issue on this repository.
+- The frontend currently expects the backend at `http://localhost:8001`.
+- URL processing uses HTTP extraction and falls back to simpler scraping when advanced scraping is unavailable.
+- EasyOCR is loaded lazily. Backend startup does not require a GPU.
+- Generated code should be reviewed and tested before being used in research or production.
