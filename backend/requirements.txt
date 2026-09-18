@@ -1,0 +1,75 @@
+# fastapi
+# uvicorn
+# pydantic
+# requests
+# pillow
+# numpy
+# pdf2image
+# PyPDF2
+# python-multipart
+# beautifulsoup4
+# # AI orchestration
+
+# litellm
+# # Optional advanced scraping (requires playwright):
+# # crawl4ai
+
+
+# fastapi
+# uvicorn[standard]
+# python-multipart
+# pydantic
+# requests
+# beautifulsoup4
+# PyPDF2
+# pdf2image
+# numpy
+# Pillow
+
+# # Agent framework (replaces crewai)
+# agno
+
+# # Provider SDKs used by Agno's model wrappers
+# anthropic
+# openai
+# google-genai
+
+# # Optional: better URL scraping (falls back to requests+bs4 if unavailable)
+# crawl4ai
+
+# # Optional: OCR for image text extraction (falls back to no OCR if unavailable)
+# easyocr
+
+
+# Core web framework
+fastapi==0.115.6
+uvicorn[standard]
+python-multipart
+pydantic
+python-dotenv
+
+# HTTP / scraping
+httpx
+requests
+beautifulsoup4
+trafilatura
+
+# PDF processing
+PyPDF2
+pdf2image
+
+# Numerics / images
+numpy
+Pillow
+
+# OCR (lazy-loaded via get_reader())
+easyocr
+
+# Optional advanced scraping (falls back to requests/BeautifulSoup if missing)
+crawl4ai
+
+# Agent orchestration + model providers (falls back to fallback_code if missing)
+agno
+anthropic
+openai
+google-generativeai
